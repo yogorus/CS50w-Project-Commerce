@@ -1,0 +1,24 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Active Listings</h2>
+    <div class="container-fluid">
+        <div class="row">
+            {% for listing in listings %}
+                <div class="col-lg-4 d-flex align-items-stretch" style="margin: 5px;">
+                    <div class="card">
+                        <div class="card-body">
+                            <h2 class="card-title">{{ listing.title }}</h2>
+                            {% if listing.image %}
+                                <img src="{{ listing.image }}" class="img-fluid">
+                            {% endif %}
+                            <p class="card-text" style="font-size: 1.2em;">{{ listing.description }}</p>
+                            <h3 class="card-titile">{{ listing.price }}$</h3>
+                            <h4 class="card-subtitle mb-2 text-muted">Created on: {{ listing.date }}</h4>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
