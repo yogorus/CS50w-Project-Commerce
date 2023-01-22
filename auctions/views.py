@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django import forms
 
@@ -100,3 +100,13 @@ def create(request):
     return render(request, "auctions/create.html", {
         "form" : ListingForm
     })
+
+
+def listing(request, id):
+    listing = get_object_or_404(Listing, pk=id)
+    
+    return render(request, 'auctions/listing.html', {
+        'listing' : listing
+    })
+    
+   
