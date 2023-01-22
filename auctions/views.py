@@ -4,19 +4,11 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
-from django import forms
-
-from .models import User, Listing
 
 
-class ListingForm(forms.Form):
-    title = forms.CharField()
-    description = forms.CharField(widget=forms.Textarea)
-    price = forms.DecimalField(max_digits=10, decimal_places=2)
-    image = forms.URLField(required=False, widget=forms.URLInput(attrs={
-        'placeholder' : 'Url for image(optional)'
-    }))
-    # TODO: category
+from .models import User, Listing, Category, Comment
+from .forms import ListingForm, CommentForm
+
 
 def index(request):
     listings = Listing.objects.all().order_by('-date')
@@ -88,8 +80,13 @@ def create(request):
             description = form.cleaned_data['description']
             price = form.cleaned_data['price']
             image = form.cleaned_data['image']
+            try:
+                category = Category.objects.get(name=form.cleaned_data['category'])
+            except Category.DoesNotExist:
+                category = None
+            author = request.user
 
-            listing = Listing(title=title, description=description, price=price, image=image)
+            listing = Listing(title=title, description=description, price=price, image=image, category=category, author=author)
             listing.save()
         
         else:
@@ -104,9 +101,28 @@ def create(request):
 
 def listing(request, id):
     listing = get_object_or_404(Listing, pk=id)
-    
+    comments = listing.comments.all()
+
+    if request.method == "POST":
+        comment_form = CommentForm(request.POST)
+
+        if comment_form.is_valid():
+            author = request.user
+            text = comment_form.cleaned_data['text']
+            comment = Comment(author=author, text=text, listing=listing)
+            
+            comment.save()
+        else:
+            return render(request, "auctions/listing.html", {
+                "form": comment_form
+            })
+        
+        return HttpResponseRedirect(reverse('listing', args=[listing.id]))
+
     return render(request, 'auctions/listing.html', {
-        'listing' : listing
+        'listing' : listing,
+        'comments': comments,
+        'form': CommentForm
     })
     
    

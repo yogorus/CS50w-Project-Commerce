@@ -3,22 +3,25 @@
 {% block body %}
     <h2>Active Listings</h2>
     <div class="container-fluid">
-        <div class="row">
+        {% comment %} <div class="row"> {% endcomment %}
             {% for listing in listings %}
-                <div class="col-lg-4 d-flex align-items-stretch" style="margin: 5px;">
+                {% comment %} <div class="col-lg-4 d-flex align-items-stretch" style="margin: 5px;"> {% endcomment %}
                     <div class="card">
                         <div class="card-body">
                             <a href="{% url 'listing' id=listing.id %}"><h2 class="card-title">{{ listing.title }}</h2></a>
                             {% if listing.image %}
-                                <img src="{{ listing.image }}" class="img-fluid">
+                                <img src="{{ listing.image }}" class='img-fluid'>
                             {% endif %}
                             <p class="card-text" style="font-size: 1.2em;">{{ listing.description }}</p>
                             <h3 class="card-titile">{{ listing.price }}$</h3>
-                            <h4 class="card-subtitle mb-2 text-muted">Created on: {{ listing.date }}</h4>
+                            {% if listing.category %}
+                                <h5 class="card-title">{{ listing.category }}</h5>
+                            {% endif %}
+                            <h4 class="card-subtitle mb-2 text-muted">Created on: {{ listing.date }}<br>By {{ listing.author }}</h4>
                         </div>
                     </div>
-                </div>
+                {% comment %} </div> {% endcomment %}
             {% endfor %}
-        </div>
+        {% comment %} </div> {% endcomment %}
     </div>
 {% endblock %}

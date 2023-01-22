@@ -19,7 +19,7 @@ class Listing(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.URLField(blank=True, null=True)
     date = models.DateTimeField(auto_now_add=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='listings', blank=True, default='No Category')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='listings', blank=True, null=True, default='No Category')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="listings")
 
     def __str__(self):
