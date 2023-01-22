@@ -8,7 +8,7 @@
                 <div class="col-lg-4 d-flex align-items-stretch" style="margin: 5px;">
                     <div class="card">
                         <div class="card-body">
-                            <h2 class="card-title">{{ listing.title }}</h2>
+                            <a href="{% url 'listing' id=listing.id %}"><h2 class="card-title">{{ listing.title }}</h2></a>
                             {% if listing.image %}
                                 <img src="{{ listing.image }}" class="img-fluid">
                             {% endif %}

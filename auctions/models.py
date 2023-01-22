@@ -33,3 +33,5 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'Comment on {self.listing.id}: {self.listing.title} by {self.author}'
+
+# TODO: Bids
