@@ -30,6 +30,7 @@ class Comment(models.Model):
     text = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='comments')
+    date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'Comment on {self.listing.id}: {self.listing.title} by {self.author}'

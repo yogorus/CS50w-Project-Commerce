@@ -101,7 +101,7 @@ def create(request):
 
 def listing(request, id):
     listing = get_object_or_404(Listing, pk=id)
-    comments = listing.comments.all()
+    comments = listing.comments.all().order_by('-date')
 
     if request.method == "POST":
         comment_form = CommentForm(request.POST)
