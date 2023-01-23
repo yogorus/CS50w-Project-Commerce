@@ -69,6 +69,7 @@ def register(request):
         return render(request, "auctions/register.html")
 
 
+@login_required
 def create(request):
     if request.method == "POST":
         
