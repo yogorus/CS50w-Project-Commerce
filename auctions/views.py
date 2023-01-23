@@ -4,10 +4,11 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
+from django.db.models import Max
 
 
-from .models import User, Listing, Category, Comment
-from .forms import ListingForm, CommentForm
+from .models import User, Listing, Category, Comment, Bid
+from .forms import ListingForm, CommentForm, BidForm
 
 
 def index(request):
@@ -103,27 +104,48 @@ def create(request):
 def listing(request, id):
     listing = get_object_or_404(Listing, pk=id)
     comments = listing.comments.all().order_by('-date')
+    bids = listing.bids.all()
+    max_bid = bids.aggregate(Max('amount'))['amount__max']
 
     if request.method == "POST":
-        comment_form = CommentForm(request.POST)
+        
+        if 'comment' in request.POST:
+            comment_form = CommentForm(request.POST)
+        
+            if comment_form.is_valid():
+                author = request.user
+                text = comment_form.cleaned_data['text']
+                comment = Comment(author=author, text=text, listing=listing)
+                
+                comment.save()
+            else:
+                return render(request, "auctions/listing.html", {
+                    "comment_form": comment_form
+                })
+        
+        if 'bid' in request.POST:
+            bid_form = BidForm(request.POST)
 
-        if comment_form.is_valid():
-            author = request.user
-            text = comment_form.cleaned_data['text']
-            comment = Comment(author=author, text=text, listing=listing)
-            
-            comment.save()
-        else:
-            return render(request, "auctions/listing.html", {
-                "form": comment_form
-            })
+            if bid_form.is_valid():
+                author = request.user
+                amount = bid_form.cleaned_data['amount']
+                bid = Bid(author=author, amount=amount, listing=listing)
+
+                bid.save()
+            else:
+                return render(request, "auctions/listing.html", {
+                    "bid_form": bid_form
+                })
         
         return HttpResponseRedirect(reverse('listing', args=[listing.id]))
 
     return render(request, 'auctions/listing.html', {
         'listing' : listing,
         'comments': comments,
-        'form': CommentForm
+        'bids' : bids,
+        'max_bid': f'{max_bid:.2f}',
+        'comment_form': CommentForm,
+        'bid_form': BidForm
     })
     
    

@@ -16,12 +16,23 @@
                 <h4 class="card-subtitle mb-2 text-muted">Created on: {{ listing.date }}<br>By {{ listing.author }}</h4>
             </div>
         </div>
+        <div class="card" style='padding: 5px'>
+            {% if user.is_authenticated %}
+                <form action="{% url 'listing' id=listing.id %}" method="post">
+                    {% csrf_token %}
+                    {{ bid_form.as_p }}
+                    <button type="submit" class="btn btn-primary" name='bid'>Place bid</button>
+                </form>
+            {% endif %}
+            <h3 class="card-subtitle">{{ bids.count }} Bids total</h3>
+            <h4 class="card-subtitle text-muted">Max bid is: {{ max_bid }}$</h4>
+        </div>
         <h2 class="card-title">Comments:</h2>
             {% if user.is_authenticated %}
                 <form action="{% url 'listing' id=listing.id %}" method="post">
                     {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" class="btn btn-primary">Add Comment</button>
+                    {{ comment_form.as_p }}
+                    <button type="submit" class="btn btn-primary" name='comment'>Add Comment</button>
                 </form>
             {% endif %}
             {% for comment in comments %}
