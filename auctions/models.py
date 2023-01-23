@@ -3,7 +3,7 @@ from django.db import models
 
 
 class User(AbstractUser):
-    pass
+    watchlist = models.ManyToManyField('Listing', blank=True, related_name='watchlist')
 
 
 class Category(models.Model):
@@ -21,7 +21,7 @@ class Listing(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='listings', blank=True, null=True, default='No Category')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="listings")
-
+    
     def __str__(self):
         return f"{self.id}: {self.title} by {self.author}"
 
@@ -35,4 +35,10 @@ class Comment(models.Model):
     def __str__(self):
         return f'Comment on {self.listing.id}: {self.listing.title} by {self.author}'
 
-# TODO: Bids
+
+class Bid(models.Model):
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='bids')
+    date = models.DateTimeField(auto_now_add=True)
+    
