@@ -109,6 +109,7 @@ def listing(request, id):
 
     if request.method == "POST":
         
+        # Comment validation
         if 'comment' in request.POST:
             comment_form = CommentForm(request.POST)
         
@@ -120,9 +121,11 @@ def listing(request, id):
                 comment.save()
             else:
                 return render(request, "auctions/listing.html", {
-                    "comment_form": comment_form
+                    "comment_form": comment_form,
+                    'listing': listing
                 })
         
+        # Bid validation
         if 'bid' in request.POST:
             bid_form = BidForm(request.POST)
 
@@ -131,19 +134,25 @@ def listing(request, id):
                 amount = bid_form.cleaned_data['amount']
                 bid = Bid(author=author, amount=amount, listing=listing)
 
-                bid.save()
+                if bid.amount > max_bid:
+                    bid.save()
+                else:
+                    return HttpResponseRedirect(reverse('listing', args=[listing.id]))
+        
             else:
                 return render(request, "auctions/listing.html", {
-                    "bid_form": bid_form
+                    "bid_form": bid_form,
+                    'listing': listing
                 })
         
         return HttpResponseRedirect(reverse('listing', args=[listing.id]))
 
+    # GET request
     return render(request, 'auctions/listing.html', {
         'listing' : listing,
         'comments': comments,
         'bids' : bids,
-        'max_bid': f'{max_bid:.2f}',
+        'max_bid': f'{max_bid:.2f}' if bids else 0,
         'comment_form': CommentForm,
         'bid_form': BidForm
     })
