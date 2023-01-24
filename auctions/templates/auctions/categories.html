@@ -1,0 +1,14 @@
+{% extends 'auctions/index.html' %}
+
+{% block header %}
+    <h2>{{ header }}</h2>
+    <form action="{% url 'categories' %}">
+        <select name="q" id="" class='form-select'>
+            <option value="" selected>----</option>
+            {% for category in categories %}
+                <option value="{{ category }}">{{ category }}</option>       
+            {% endfor %}
+        </select>
+        <button type="submit" class='btn btn-secondary btn-sm' style='margin: 2px'>Search by category</button>
+    </form>
+{% endblock header %}

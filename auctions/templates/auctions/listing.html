@@ -8,7 +8,7 @@
                     {% if listing in user.watchlist.all %}
                         <form action="{% url 'addwatchlist' id=listing.id %}" method="post">
                             {% csrf_token %}
-                            <button type="submit" class='btn btn-primary' name='remove'>Remove from watchlist</button>
+                            <button type="submit" class='btn btn-danger' name='remove'>Remove from watchlist</button>
                         </form>
                     {% else %}
                         <form action="{% url 'addwatchlist' id=listing.id %}" method="post">

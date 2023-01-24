@@ -8,7 +8,7 @@ from django.db.models import Max
 
 
 from .models import User, Listing, Category, Comment, Bid
-from .forms import ListingForm, CommentForm, BidForm
+from .forms import ListingForm, CommentForm, BidForm, CHOICES
 
 
 def index(request):
@@ -162,7 +162,7 @@ def listing(request, id):
 @login_required
 def addwatchlist(request, id):
     listing = get_object_or_404(Listing, pk=id)
-    user = get_object_or_404(User, pk=request.user.id)
+    user = request.user
 
     if request.method == 'POST':
         if 'add' in request.POST:
@@ -183,3 +183,18 @@ def watchlist(request):
         "listings" : listings,
         'header': 'Your watchlist'
     })
+
+
+def categories(request):
+    categories = Category.objects.only('name').all()
+    try:
+        category = Category.objects.get(name=request.GET.get('q'))
+        listings = category.listings.all()
+    except Category.DoesNotExist:
+        listings = Listing.objects.all()
+    
+    return render(request, "auctions/categories.html", {
+        'listings': listings,
+        'header': 'Pick category',
+        'categories': categories
+    }) 
