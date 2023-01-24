@@ -1,7 +1,7 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active Listings</h2>
+    <h2>{{ header }}</h2>
     <div class="container-fluid">
         {% comment %} <div class="row"> {% endcomment %}
             {% for listing in listings %}

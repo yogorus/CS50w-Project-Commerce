@@ -4,6 +4,19 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-body">
+                {% if user.is_authenticated %}
+                    {% if listing in user.watchlist.all %}
+                        <form action="{% url 'addwatchlist' id=listing.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class='btn btn-primary' name='remove'>Remove from watchlist</button>
+                        </form>
+                    {% else %}
+                        <form action="{% url 'addwatchlist' id=listing.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class='btn btn-primary' name='add'>Add to watchlist</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
                 <h2 class="card-title">{{ listing.title }}</h2>
                 {% if listing.image %}
                     <img src="{{ listing.image }}" class="img-fluid">

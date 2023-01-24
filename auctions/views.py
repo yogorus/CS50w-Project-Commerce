@@ -14,7 +14,8 @@ from .forms import ListingForm, CommentForm, BidForm
 def index(request):
     listings = Listing.objects.all().order_by('-date')
     return render(request, "auctions/index.html", {
-        "listings" : listings
+        "listings" : listings,
+        "header": 'Active Listings'
     })
 
 
@@ -156,5 +157,29 @@ def listing(request, id):
         'comment_form': CommentForm,
         'bid_form': BidForm
     })
+
+
+@login_required
+def addwatchlist(request, id):
+    listing = get_object_or_404(Listing, pk=id)
+    user = get_object_or_404(User, pk=request.user.id)
+
+    if request.method == 'POST':
+        if 'add' in request.POST:
+            user.watchlist.add(listing)
+        
+        if 'remove' in request.POST:
+            user.watchlist.remove(listing)
     
-   
+    return HttpResponseRedirect(reverse('listing', args=[listing.id]))
+
+
+@login_required
+def watchlist(request):
+    user = request.user
+    listings = user.watchlist.all().order_by('-date')
+
+    return render(request, "auctions/index.html", {
+        "listings" : listings,
+        'header': 'Your watchlist'
+    })
