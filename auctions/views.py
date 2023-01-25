@@ -138,10 +138,10 @@ def listing(request, id):
                 amount = bid_form.cleaned_data['amount']
                 bid = Bid(author=author, amount=amount, listing=listing)
                 
-                if (max_bid is not None and amount > max_bid) or amount > listing.price:
+                if (max_bid is not None and amount > max_bid) or amount >= listing.price:
                     bid.save()
                 else:
-                    return HttpResponseRedirect(reverse('listing', args=[listing.id]))
+                    return HttpResponseForbidden('<h1>403 Error: Invalid Bid!</h1>')
                 
             else:
                 return render(request, "auctions/listing.html", {
