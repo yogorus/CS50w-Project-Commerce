@@ -1,18 +1,18 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.db.models import Max
 
 
 from .models import User, Listing, Category, Comment, Bid
-from .forms import ListingForm, CommentForm, BidForm, CHOICES
+from .forms import ListingForm, CommentForm, BidForm
 
 
 def index(request):
-    listings = Listing.objects.all().order_by('-date')
+    listings = Listing.objects.filter(active=True).order_by('-date')
     return render(request, "auctions/index.html", {
         "listings" : listings,
         "header": 'Active Listings'
@@ -128,18 +128,21 @@ def listing(request, id):
         
         # Bid validation
         if 'bid' in request.POST:
+            if not listing.active or request.user == listing.author:
+                return HttpResponseForbidden
+            
             bid_form = BidForm(request.POST)
 
             if bid_form.is_valid():
                 author = request.user
                 amount = bid_form.cleaned_data['amount']
                 bid = Bid(author=author, amount=amount, listing=listing)
-
-                if bid.amount > max_bid:
+                
+                if (max_bid is not None and amount > max_bid) or amount > listing.price:
                     bid.save()
                 else:
                     return HttpResponseRedirect(reverse('listing', args=[listing.id]))
-        
+                
             else:
                 return render(request, "auctions/listing.html", {
                     "bid_form": bid_form,
@@ -155,7 +158,8 @@ def listing(request, id):
         'bids' : bids,
         'max_bid': f'{max_bid:.2f}' if bids else 0,
         'comment_form': CommentForm,
-        'bid_form': BidForm
+        'bid_form': BidForm,
+        'winner': bids.get(amount=max_bid).author if not listing.active else None
     })
 
 
@@ -189,12 +193,28 @@ def categories(request):
     categories = Category.objects.only('name').all()
     try:
         category = Category.objects.get(name=request.GET.get('q'))
-        listings = category.listings.all()
+        listings = category.listings.filter(active=True).order_by('-date')
     except Category.DoesNotExist:
-        listings = Listing.objects.all()
+        listings = Listing.objects.filter(active=True).order_by('-date')
     
     return render(request, "auctions/categories.html", {
         'listings': listings,
         'header': 'Pick category',
         'categories': categories
     }) 
+
+
+@login_required
+def close(request, id):
+    listing = get_object_or_404(Listing, pk=id)
+    user = request.user
+
+    if request.method == "POST":
+        if listing.author != user or listing.bids.all() is None:
+            return HttpResponseForbidden()
+        
+        listing.active = False
+        listing.save(update_fields=['active'])
+        
+
+    return HttpResponseRedirect(reverse('listing', args=[listing.id]))

@@ -2,7 +2,10 @@
 
 {% block body %}
     <div class="container-fluid">
-        <div class="card">
+        {% if not listing.active %}
+            <div class="alert alert-success">This listing is closed! The winner is {{ winner }}</div>
+        {% endif %}
+        <div class="card bg-light">
             <div class="card-body">
                 {% if user.is_authenticated %}
                     {% if listing in user.watchlist.all %}
@@ -14,6 +17,12 @@
                         <form action="{% url 'addwatchlist' id=listing.id %}" method="post">
                             {% csrf_token %}
                             <button type="submit" class='btn btn-primary' name='add'>Add to watchlist</button>
+                        </form>
+                    {% endif %}
+                    {% if user == listing.author and bids and listing.active %}
+                        <form action="{% url 'close' id=listing.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class='btn btn-success'>Close Listing</button>
                         </form>
                     {% endif %}
                 {% endif %}
@@ -29,18 +38,20 @@
                 <h4 class="card-subtitle mb-2 text-muted">Created on: {{ listing.date }}<br>By {{ listing.author }}</h4>
             </div>
         </div>
-        <div class="card" style='padding: 5px'>
+        <div class="card bg-light" style='padding: 5px'>
             {% if user.is_authenticated %}
+                {% if listing.active and user != listing.author %}
                 <form action="{% url 'listing' id=listing.id %}" method="post">
                     {% csrf_token %}
                     {{ bid_form.as_p }}
                     <button type="submit" class="btn btn-primary" name='bid'>Place bid</button>
                 </form>
+                {% endif %}
             {% endif %}
             <h3 class="card-subtitle">{{ bids.count }} Bids total</h3>
             <h4 class="card-subtitle text-muted">Max bid is: {{ max_bid }}$</h4>
         </div>
-        <h2 class="card-title">Comments:</h2>
+        <hr>
             {% if user.is_authenticated %}
                 <form action="{% url 'listing' id=listing.id %}" method="post">
                     {% csrf_token %}
@@ -48,8 +59,10 @@
                     <button type="submit" class="btn btn-primary" name='comment'>Add Comment</button>
                 </form>
             {% endif %}
+            <hr>
+            <h2 class="card-title">Comments:</h2>
             {% for comment in comments %}
-                <div class="card">
+                <div class="card mb-2 bg-light">
                     <div class="card-body">
                         <h4 class="card-titile">{{ comment.author }}</h4>
                         <p class="card-text">{{ comment.text }}</p>
